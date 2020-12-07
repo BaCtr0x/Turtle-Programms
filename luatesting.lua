@@ -11,6 +11,18 @@ function max(x, y)
     return y
 end
 
+local position = {0, -5, 0}
+local startingPosition = {1, 1, 0} -- the starting position of the mining turtle
+
+print(position[1] ~= startingPosition[2])
+
+function returnFromMiningTunnel(corridor)
+	while position[2] ~= startingPosition[2] do
+		printArray(position)
+		position[2] = position[2] + 1
+	end
+end
+
 function makeStaircase()
     	local X = 4
     	local Y = 4
@@ -117,4 +129,25 @@ function abs(value)
 	end
 end
 
-print(abs(10))
+function matrix2D(dimensions)
+	
+end
+
+-- checks if a value is contained in the array
+ function contains(tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+
+local chestIDs = {"61c2ff11", "4678d22a", "69875e0a", "1bf7bb75", "705b828d", "6f3456f4", "6ef93715", "3aa5892e"}
+
+
+test = {table: "bla"}
+print(test["table"])
+
+
