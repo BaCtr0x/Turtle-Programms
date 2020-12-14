@@ -14,8 +14,6 @@ end
 local position = {0, -5, 0}
 local startingPosition = {1, 1, 0} -- the starting position of the mining turtle
 
-print(position[1] ~= startingPosition[2])
-
 function returnFromMiningTunnel(corridor)
 	while position[2] ~= startingPosition[2] do
 		printArray(position)
@@ -79,14 +77,15 @@ end
  function equal(arr1, arr2)
  	local isEqual = true
  	if #arr1 == #arr2 then
- 		for i = 0, #arr1 do
- 			if isEqual == false then return false
- 			else
- 				if arr1[i] ~= arr2[i] then isEqual = false end
+ 		for i = 1, #arr1 do
+ 			if arr1[i] ~= arr2[i] then
+ 				return false
  			end
  		end
+ 		return true
+ 	else
+ 		return false
  	end
- 	return true
  end
 
  function printArray(arr)
@@ -143,11 +142,16 @@ end
     return false
 end
 
+-- subtract array from another array
+function subtractArrays(arr1, arr2)
+	local result = {0, 0, 0}
+	for i = 1, #arr1 do
+		result[i] = arr1[i] - arr2[i]
+	end
+	return result
+end
 
-local chestIDs = {"61c2ff11", "4678d22a", "69875e0a", "1bf7bb75", "705b828d", "6f3456f4", "6ef93715", "3aa5892e"}
+a = {0, 1}
+b = {0, -1}
 
-
-test = {table: "bla"}
-print(test["table"])
-
-
+print(equal(a, b))

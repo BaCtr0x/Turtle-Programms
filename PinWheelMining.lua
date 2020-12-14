@@ -9,6 +9,7 @@ local startingPosition = {2, 1, 0} -- the starting position of the mining turtle
 local leftOfPosition = {0, 0, 0} -- the position the turtle left to get back to the origin or after reload of chunk
 local chestLocation = {0, 0, 0}  --starts to detect a chest besides the turtle at the begining {0,0,0} means chest is not placed
 local orientation = {0, 1}  -- x, y between -1 and 1 staerting looking north in its own system
+local startingOrientation = {0, 1} -- for orienting the turtle according to its starting orientation
 local isRight = true
 local staircaseMid = {1, 1, 3} -- position of the middle block of the staircase that the turtle is currently operating in
 local corridor = "north" -- just the initial corridor orientation
@@ -43,11 +44,13 @@ function excavateLevel()
     	digCorridor(8)
     	corridorDiggedCount = corridorDiggedCount + 1
     end
+    moveXUp(3)
 end
 
--- just for testing the corridor digging to verify that it is working correctly
+-- just for testing
 function testing()
-	checkForChest()
+	local testOri = {0, -1}
+	orientate(testOri)
 end
 
 
@@ -56,15 +59,18 @@ end
 
 -- move turtle to dig the corridor from staircase
 function moveToCorridorDiggingPosition()
+	print(corridorDiggedCount)
 	if corridorDiggedCount == 0 then
 		moveXForward(2)
 	elseif corridorDiggedCount == 1 then
-		turnRight()
+		turnLeft()
 		moveForward()
 	elseif corridorDiggedCount == 2 then
-		turnAround()
+		moveForward()
+		turnLeft()
 		moveForward()
 	else
+		moveForward()
 		turnLeft()
 		moveXForward(2)
 	end
@@ -73,13 +79,27 @@ end
 -- moves the turtle back to the corridor 
 function backToMainCorridor()
 	turnAround()
-	if corridor == "north" or corridor == "south" then
-		while position[1] ~= startingPosition[1] do
-			moveForward()
+	if corridorDiggedCount >= 2 then
+		if corridor == "north" or corridor == "south" then
+			while position[1] ~= startingPosition[1] - 1 do
+				printArray(position)
+				moveForward()
+			end
+		else
+			while position[2] ~= startingPosition[2] + 1 do
+				moveForward()
+			end
 		end
+		printArray(position)
 	else
-		while position[2] ~= startingPosition[2] do 
-			moveForward()
+		if corridor == "north" or corridor == "south" then
+			while position[1] ~= startingPosition[1] do
+				moveForward()
+			end
+		else
+			while position[2] ~= startingPosition[2] do 
+				moveForward()
+			end
 		end
 	end
 	print("back in main corridor")
@@ -109,6 +129,30 @@ function goBackToStaircase()
 			end
 		end
 	end
+	if position[1] ~= startingPosition[1] or position[2] ~= startingPosition[2] then
+		if position[1] > startingPosition[1] then
+			orientate({-1, 0})
+			while position[1] > startingPosition[1] do
+				moveForward()
+			end
+		elseif position[1] < startingPosition[1] then
+			orientate({1, 0})
+			while position[1] < startingPosition[1] do
+				moveForward()
+			end
+		end
+		if position[2] > startingPosition[2] then
+			orientate({0, -1})
+			while position[2] > startingPosition[2] do
+				moveForward()
+			end
+		elseif position[2] < startingPosition[2] then
+			orientate({0, 1})
+			while position[2] < startingPosition[2] do
+				moveForward()
+			end
+		end
+	end
 	print("back in staircase")
 end
 
@@ -118,6 +162,7 @@ function toMidOfStaircase()
 	turnLeft()
 	digForward()
 	turnRight()
+	print("Back in the middle of the staircase!")
 end
 
 -- returns the turtle from its current porsiton in the mine to the middle of the stiarcase
@@ -153,7 +198,7 @@ end
 -- Digging --
 
 
--- the turtle digs in a spiral form the stairtcase
+-- the turtle digs in a spiral to form the stairtcase
 function makeStaircase()
     for i=1, 2 do
     	local X = 4
@@ -168,7 +213,7 @@ function makeStaircase()
             end
             if x == y or (x < 0 and x == -y) or (x > 0 and x == 1-y) then
             	turnLeft()
-            	if i % 2 == 0 and (x == 2 or y == 2 or x == 0 or y == 0) then
+            	if i % 2 == 0 and ((x == 2 and y == -1) or (x == -1 or y == -1) or (x == 2 and y == 2) or (x == -2 and y == 2)) then
             		placeTorch()
             	end
                 tempX = dx
@@ -215,7 +260,6 @@ function digCorridor(length)
 	end
 	print("Main corrdiro done")
 	goBackToStaircase()
-	turnAround()
 end
 
 -- starts to dig the block infront and then mines a 2x2 area
@@ -388,6 +432,35 @@ function changeOrientationTurnRight()
 		end
 	end
 end
+
+-- orient the turtle according to the defined orientation
+function orientate(resOrient)
+	print(equal(orientation, resOrient))
+	if equal(orientation, resOrient) == false then
+		print("orienting")
+		if orientation[1] == resOrient[1] or orientation[2] == resOrient[2] then
+			print("turning around")
+			turnAround()
+		elseif orientation[1] == 0 then
+			if abs(orientation[2]) + abs(resOrient[1]) == 2 then
+				print("turning right")
+				turnRight()
+			else 
+				print("turning Left")
+				turnLeft()
+			end
+		else
+			if abs(orientation[1]) + abs(resOrient[2]) == 2 then
+				print("turning Right")
+				turnRight()
+			else 
+				print("turning Left")
+				turnLeft()
+			end
+		end
+	end
+	print("orientat")
+end
  
 -- refuels the turtle if needed by the optimal amount
 function Fuel()
@@ -530,6 +603,18 @@ function orientationVectorAsString(orientationVector)
 	end
 end
 
+-- a simple function to turn the written orientations of the user into the chestposition
+function inputToChestPosition(strOri)
+	if strOri == "left" then
+		chestLocation = {1, 1, 0}
+	elseif strOri == "front" then
+		chestLocation = {2, 2, 0}
+	elseif strOri == "right" then
+		chestLocation = {3, 1, 0}
+	else
+		chestLocation = {2, 0, 0}
+	end
+end
 
 
 -- fundamental functions --
@@ -540,13 +625,14 @@ function equal(arr1, arr2)
  	local isEqual = true
  	if #arr1 == #arr2 then
  		for i = 1, #arr1 do
- 			if isEqual == false then return false
- 			else
- 				if arr1[i] ~= arr2[i] then isEqual = false end
+ 			if arr1[i] ~= arr2[i] then
+ 				return false
  			end
  		end
+ 		return true
+ 	else
+ 		return false
  	end
- 	return true
  end
 
  -- simple squaring function
@@ -571,6 +657,15 @@ function abs(value)
 	end
 end
 
+-- subtract array from another array
+function subtractArrays(arr1, arr2)
+	local result = {0, 0, 0}
+	for i = 1, #arr1 do
+		result[i] = arr1[i] - arr2[i]
+	end
+	return result
+end
+
 -- prints a 1dim array the way youd expect it to be printed
 function printArray(arr)
 	text = "{"
@@ -593,6 +688,40 @@ function printArray(arr)
     end
     return false
 end
+
+
+-- Start
+--[[print("Hi There Welcome to Mining Turtle Program")
+print("How Far Will Turtle Go (Corridor length)?")
+corriLen = tonumber(io.read())
+if corriLen < 8 then
+	print("I will not dig a swastika for you :D")
+	print("Please enter a length of 8 or longer. To be most efficient enter a multiple of 4.")
+	input = io.read()
+end
+print("How deep should the staircase go?")
+print("(Most efficient will a multiple of 3 be)")
+depth = tonumber(io.read())
+print("Where is the chest to put the items in?")
+print("write 'left', 'right', 'front', 'back', 'none' if there is no placed chest.")
+chestLoc = io.read()
+if chestLoc == "none" and (depth > 3 or corriLen > 8) then
+	print("I won't be able to store everything I mine, do you want to loose some items?")
+	if io.read() == "no" then
+		print("Where is you chest?")
+		chestLoc = io.read()
+	else
+		print("If you say so.")
+	end
+end
+generalCheck()
+if Error == 1 then 
+	repeat
+		sleep(10)
+		reCheck()
+		Check()
+	until Error == 0
+end]]
 
 excavateLevel()
 -- testing()
