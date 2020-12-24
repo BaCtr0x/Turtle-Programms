@@ -49,8 +49,10 @@ end
 
 -- just for testing
 function testing()
-	local testOri = {0, -1}
-	orientate(testOri)
+	corridorDiggedCount = 3
+	orientation = {1,0}
+	position = {1, -7, -3}
+	goBackToStaircase()
 end
 
 
@@ -60,6 +62,7 @@ end
 -- move turtle to dig the corridor from staircase
 function moveToCorridorDiggingPosition()
 	print(corridorDiggedCount)
+	printArray(position)
 	if corridorDiggedCount == 0 then
 		moveXForward(2)
 	elseif corridorDiggedCount == 1 then
@@ -81,16 +84,15 @@ function backToMainCorridor()
 	turnAround()
 	if corridorDiggedCount >= 2 then
 		if corridor == "north" or corridor == "south" then
-			while position[1] ~= startingPosition[1] - 1 do
-				printArray(position)
+			while position[1] ~= (startingPosition[1] - 1) do
 				moveForward()
 			end
 		else
-			while position[2] ~= startingPosition[2] + 1 do
+			while position[2] ~= (startingPosition[2] + 1) do
+				printArray(position)
 				moveForward()
 			end
 		end
-		printArray(position)
 	else
 		if corridor == "north" or corridor == "south" then
 			while position[1] ~= startingPosition[1] do
@@ -115,6 +117,7 @@ function goBackToStaircase()
 			end
 		else
 			while position[2] ~= startingPosition[2] do 
+				printArray(position)
 				moveForward()
 			end
 		end
@@ -152,6 +155,9 @@ function goBackToStaircase()
 				moveForward()
 			end
 		end
+	end
+	if not equal(orientation, {0, 1}) then
+		orientate({0,1})
 	end
 	print("back in staircase")
 end
@@ -239,6 +245,8 @@ function digCorridor(length)
 			torchNeedsPlacing = i%5 == 0
 			dig2x2()
 			turnRight()
+			printArray(position)
+			printArray(orientation)
 			for j = 1, length + 1 do
 				isRight = j % 2 == 0
 				torchNeedsPlacing = j % 5 == 0
@@ -403,15 +411,15 @@ end
 function changeOrientationTurnLeft()
 	if orientation[1] ~= 0 then
 		if orientation[1] == 1 then
-			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] - 1
+			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] + 1
 		else
-			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] + 1
+			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] - 1
 		end
 	else
 		if orientation[2] == 1 then
-			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] - 1
+			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] - 1
 		else
-			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] + 1
+			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] + 1
 		end
 	end
 end
@@ -420,22 +428,21 @@ end
 function changeOrientationTurnRight()
 	if orientation[1] ~= 0 then
 		if orientation[1] == 1 then
-			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] + 1
-		else
-			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] - 1
-		end
-	else
-		if orientation[2] == 1 then
 			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] - 1
 		else
 			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] + 1
+		end
+	else
+		if orientation[2] == 1 then
+			orientation[1], orientation[2] = orientation[1] + 1, orientation[2] - 1
+		else
+			orientation[1], orientation[2] = orientation[1] - 1, orientation[2] + 1
 		end
 	end
 end
 
 -- orient the turtle according to the defined orientation
 function orientate(resOrient)
-	print(equal(orientation, resOrient))
 	if equal(orientation, resOrient) == false then
 		print("orienting")
 		if orientation[1] == resOrient[1] or orientation[2] == resOrient[2] then
@@ -450,7 +457,7 @@ function orientate(resOrient)
 				turnLeft()
 			end
 		else
-			if abs(orientation[1]) + abs(resOrient[2]) == 2 then
+			if (orientation[1] + resOrient[2] == -2) or (orientation[1] + resOrient[2] == 0) then
 				print("turning Right")
 				turnRight()
 			else 
@@ -459,7 +466,7 @@ function orientate(resOrient)
 			end
 		end
 	end
-	print("orientat")
+	print("orientated")
 end
  
 -- refuels the turtle if needed by the optimal amount

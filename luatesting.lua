@@ -154,4 +154,11 @@ end
 a = {0, 1}
 b = {0, -1}
 
-print(equal(a, b))
+
+printArray(position)
+
+c = -1
+
+position[1] = position[1] + c
+
+printArray(position)
